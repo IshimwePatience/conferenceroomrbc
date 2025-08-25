@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/user")
-@CrossOrigin(origins = { "http://localhost:5173",  "http://10.8.150.139:8090","https://conferenceroomsystem.vercel.app","http://localhost:3001" })
+@CrossOrigin(origins = { "http://localhost:5173",  "http://10.8.150.139:8090","https://conferenceroomsystem.vercel.app","http://localhost:3001","http://197.243.104.5:3001" })
 public class RegistrationController {
 
     private final UserService userService;
