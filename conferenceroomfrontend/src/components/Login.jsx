@@ -7,6 +7,7 @@ import meetingImg from '../assets/images/meeting.jpg';
 import rbc from '../assets/images/rbc.png';
 import rbcheader from '../assets/images/rbcphoto.png';
 import OAuthOrganizationSelection from './OAuthOrganizationSelection';
+import { Link } from 'react-router-dom';
 
 const Login = ({ setIsLoggedIn, setUserRole }) => {
     const navigate = useNavigate();
@@ -336,7 +337,7 @@ const Login = ({ setIsLoggedIn, setUserRole }) => {
             </button>
             
             <p className="text-center youtube-text-sm text-white/60">
-                Don't have an account? <a href="/register" className="text-purple-400 hover:text-purple-300 transition-colors">Register here</a>
+                Don't have an account? <Link to="/register" className="text-purple-400 hover:text-purple-300 transition-colors">Register here</Link>
             </p>
         </form>
     );

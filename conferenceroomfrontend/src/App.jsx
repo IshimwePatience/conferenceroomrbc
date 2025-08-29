@@ -176,13 +176,14 @@ function AppContent() {
         )
       ) : (
         // Unauthenticated layout: Only public routes, full screen
-        <Routes>
+          <Routes>
           <Route path="/" element={<Navigate to="/login" />} />
           <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} setUserRole={setUserRole} />} />
           <Route path="/register" element={<Register />} />
           <Route path="/register-system-admin" element={<SystemAdminRegister />} />
           <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
+
       )}
     </> // End React Fragment
   );
@@ -191,7 +192,7 @@ function AppContent() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router>
+       <Router basename="/conferenceroomsys">
         <AppContent />
       </Router>
     </QueryClientProvider>
