@@ -470,6 +470,13 @@ const Room = ({ userRole }) => {
           >
             <div className="relative h-48">
               
+              {/* Admin name on left side for organization admin and system admin */}
+              {(userRole === 'ADMIN' || userRole === 'SYSTEM_ADMIN') && (
+                <div className="absolute top-2 left-2 z-30 bg-black/60 px-3 py-1 rounded text-white text-sm font-bold pointer-events-none">
+                  {room.name || 'Admin'}
+                </div>
+              )}
+              
               {/* For normal users, show name badge; for org admins, show edit/delete */}
               {userRole === 'USER' && (
                 <div className="absolute top-2 right-2 z-30 bg-black/60 px-3 py-1 rounded text-white text-sm font-bold pointer-events-none">
@@ -854,7 +861,7 @@ const Room = ({ userRole }) => {
                     />
                   ) : null}
                   <div 
-                    className={`w-full h-full ${selectedUser.userProfilePicture ? 'hidden' : 'flex'} items-center justify-center bg-gradient-to-r from-blue-500 to-purple-500`}
+                    className={`w-full h-full ${selectedUser.userProfilePicture ? 'hidden' : 'flex'} items-center justify-center bg-gray-700`}
                   >
                     {selectedUser.userName ? (
                       <span className="text-white text-2xl font-bold">
@@ -978,7 +985,7 @@ const Room = ({ userRole }) => {
                               {booking.userProfilePicture ? (
                                 <img src={getImageUrl(booking.userProfilePicture)} alt={booking.userName} className="w-full h-full object-cover" />
                               ) : (
-                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+                                <div className="w-full h-full flex items-center justify-center bg-gray-700 text-white">
                                   {booking.userName?.split(' ').map(n=>n[0]).join('').toUpperCase()}
                                 </div>
                               )}

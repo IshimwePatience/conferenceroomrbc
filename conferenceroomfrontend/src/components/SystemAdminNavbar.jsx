@@ -184,21 +184,29 @@ const SystemAdminNavbar = ({ setIsLoggedIn, activePath }) => {
 				</div>
 			</div>
 
-			{/* Hamburger for mobile */}
-			<button
-				className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-gradient-to-r from-blue-600 to-purple-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
-				aria-label="Open menu"
-				onClick={() => setMobileMenuOpen(true)}
-			>
-				<svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-					<path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-				</svg>
-			</button>
+			{/* Mobile User Profile & Hamburger */}
+			<div className="md:hidden fixed top-4 left-4 z-50 flex items-center space-x-3">
+				{/* User Profile Avatar with Link */}
+				<Link to="/profile" className="hover:opacity-80 transition-opacity">
+					<Avatar user={currentUser} size="sm" />
+				</Link>
+				
+				{/* Hamburger Menu Button */}
+				<button
+					className="p-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+					aria-label="Open menu"
+					onClick={() => setMobileMenuOpen(true)}
+				>
+					<svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+						<path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+					</svg>
+				</button>
+			</div>
 
 			{/* Mobile menu overlay */}
 			{mobileMenuOpen && (
 				<div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex">
-					<div className="w-64 bg-gradient-to-b from-gray-900 via-blue-900 to-purple-900 h-full flex flex-col p-6 animate-slide-in-left relative">
+					<div className="w-64 bg-black h-full flex flex-col p-6 animate-slide-in-left relative">
 						{/* Close button */}
 						<button
 							className="absolute top-4 right-4 text-gray-300 hover:text-white"
@@ -211,11 +219,8 @@ const SystemAdminNavbar = ({ setIsLoggedIn, activePath }) => {
 						</button>
 						{/* Header */}
 						<div className="flex items-center space-x-3 mb-8 mt-2">
-							<div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-								<span className="text-white font-bold text-xl">C</span>
-							</div>
 							<div>
-								<h2 className="text-xl font-bold text-white">ConferenceRoom</h2>
+								<h2 className="text-xl font-['Poppins'] text-white">ConferenceRoom</h2>
 								<p className="text-sm text-blue-200">System Admin</p>
 							</div>
 						</div>
@@ -244,6 +249,9 @@ const SystemAdminNavbar = ({ setIsLoggedIn, activePath }) => {
 							</Link>
 							<Link to="/reports" className={getLinkClass('/reports')} onClick={() => setMobileMenuOpen(false)}>
 								Reports
+							</Link>
+							<Link to="/profile" className={getLinkClass('/profile')} onClick={() => setMobileMenuOpen(false)}>
+								Profile
 							</Link>
 						</nav>
 						{/* Logout Button */}

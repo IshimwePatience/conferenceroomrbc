@@ -44,14 +44,14 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
 
        Page<Booking> findByStartTimeAfter(LocalDateTime dateTime, Pageable pageable);
 
-       // Conflict detection - Check ALL active bookings (PENDING, APPROVED) to prevent duplicates
-       @Query("SELECT b FROM Booking b WHERE b.room = :room AND b.isActive = true AND " +
+       // Conflict detection - Only check APPROVED bookings to prevent conflicts
+       @Query("SELECT b FROM Booking b WHERE b.room = :room AND b.isActive = true AND b.status = 'APPROVED' AND " +
                      "(b.startTime < :endTime AND b.endTime > :startTime)")
        List<Booking> findConflictingBookings(@Param("room") Room room,
                      @Param("startTime") LocalDateTime startTime,
                      @Param("endTime") LocalDateTime endTime);
 
-       @Query("SELECT b FROM Booking b WHERE b.room = :room AND b.isActive = true AND b.id != :excludeBookingId AND "
+       @Query("SELECT b FROM Booking b WHERE b.room = :room AND b.isActive = true AND b.status = 'APPROVED' AND b.id != :excludeBookingId AND "
                      +
                      "(b.startTime < :endTime AND b.endTime > :startTime)")
        List<Booking> findConflictingBookingsExcluding(@Param("room") Room room,

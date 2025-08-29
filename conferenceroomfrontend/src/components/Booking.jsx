@@ -436,6 +436,21 @@ const Booking = () => {
         }
     };
 
+    const handleAdminCancelBooking = async (bookingId) => {
+        if (window.confirm("Are you sure you want to cancel this booking as an administrator?")) {
+            setActionError(''); setActionSuccess('');
+            try {
+                // For admin cancellation, use the admin-specific endpoint
+                await api.post(`/booking/${bookingId}/admin-cancel`);
+                setActionSuccess('Booking cancelled successfully by administrator.');
+                setTimeout(() => setActionSuccess(''), 3000);
+            } catch (err) {
+                setActionError('Failed to cancel booking: ' + (err.response?.data || err.message));
+                setTimeout(() => setActionSuccess(''), 3000);
+            }
+        }
+    };
+
     // Add options for status and sort order
     const statusOptions = [
         { value: 'ALL', label: 'All Statuses' },
@@ -543,9 +558,15 @@ const Booking = () => {
                             </div>
                         ) : (
                             <div>
-                                <table className="w-full min-w-[600px] divide-y divide-gray-700 text-xs sm:text-sm">
+                                <table className="w-full min-w-[800px] divide-y divide-gray-700 text-xs sm:text-sm">
                                     <thead className="bg-gray-800">
                                         <tr>
+                                            {(userRole === 'ADMIN' || userRole === 'SYSTEM_ADMIN') && (
+                                                <>
+                                                    <th className="py-3 px-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">User Profile</th>
+                                                    <th className="py-3 px-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">User Email</th>
+                                                </>
+                                            )}
                                             <th className="py-3 px-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Room</th>
                                             <th className="py-3 px-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Organization</th>
                                             <th className="py-3 px-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Start Time</th>
@@ -566,6 +587,28 @@ const Booking = () => {
                                             }
                                             return (
                                                 <tr key={booking.id} className="hover:bg-gray-700/50 transition-colors">
+                                                    {(userRole === 'ADMIN' || userRole === 'SYSTEM_ADMIN') && (
+                                                        <>
+                                                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-300">
+                                                                {booking.userProfilePicture ? (
+                                                                    <img 
+                                                                        src={booking.userProfilePicture} 
+                                                                        alt="User Profile" 
+                                                                        className="w-8 h-8 rounded-full object-cover border border-gray-600"
+                                                                        onError={(e) => {
+                                                                            e.target.style.display = 'none';
+                                                                            e.target.nextSibling.style.display = 'inline';
+                                                                        }}
+                                                                    />
+                                                                ) : (
+                                                                    <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-white text-xs font-medium">
+                                                                        {booking.userName ? booking.userName.charAt(0).toUpperCase() : 'U'}
+                                                                    </div>
+                                                                )}
+                                                            </td>
+                                                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-300">{booking.userEmail}</td>
+                                                        </>
+                                                    )}
                                                     <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-white">{booking.roomName}</td>
                                                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-300">{booking.organizationName}</td>
                                                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-300">{new Date(booking.startTime).toLocaleString()}</td>
@@ -596,14 +639,27 @@ const Booking = () => {
                                                         )}
                                                     </td>
                                                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-300">
-                                                        {/* Cancel button - only show for user's own pending bookings */}
-                                                        {booking.status === 'PENDING' && (
+                                                        {/* Cancel button - show for user's own pending bookings OR for admins on any booking */}
+                                                        {(booking.status === 'PENDING' || 
+                                                          (userRole === 'ADMIN' || userRole === 'SYSTEM_ADMIN')) && (
                                                             <button
-                                                                onClick={() => handleCancelBooking(booking.id)}
-                                                                className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs transition-colors"
-                                                                title="Cancel this pending booking"
+                                                                onClick={() => {
+                                                                    if ((userRole === 'ADMIN' || userRole === 'SYSTEM_ADMIN') && booking.status === 'APPROVED') {
+                                                                        handleAdminCancelBooking(booking.id);
+                                                                    } else {
+                                                                        handleCancelBooking(booking.id);
+                                                                    }
+                                                                }}
+                                                                className={`px-2 py-1 text-white rounded hover:opacity-80 text-xs transition-colors ${
+                                                                    booking.status === 'PENDING' ? 'bg-red-600 hover:bg-red-700' : 'bg-orange-600 hover:bg-orange-700'
+                                                                }`}
+                                                                title={
+                                                                    booking.status === 'PENDING' 
+                                                                        ? "Cancel this pending booking" 
+                                                                        : "Cancel this approved booking (Admin action)"
+                                                                }
                                                             >
-                                                                Cancel
+                                                                {booking.status === 'PENDING' ? 'Cancel' : 'Cancel (Admin)'}
                                                             </button>
                                                         )}
                                                     </td>
@@ -677,12 +733,19 @@ const Booking = () => {
                                                 }`}>
                                                     {booking.status}
                                                 </span>
-                                                {/* Cancel button for user's own pending bookings */}
-                                                {booking.status === 'PENDING' && (
+                                                {/* Cancel button for user's own pending bookings OR for admins on any booking */}
+                                                {(booking.status === 'PENDING' || 
+                                                  (userRole === 'ADMIN' || userRole === 'SYSTEM_ADMIN')) && (
                                                     <button
                                                         onClick={() => handleCancelBooking(booking.id)}
-                                                        className="px-1 py-0.5 bg-red-600 text-white rounded hover:bg-red-700 text-xs transition-colors"
-                                                        title="Cancel this pending booking"
+                                                        className={`px-1 py-0.5 text-white rounded hover:opacity-80 text-xs transition-colors ${
+                                                            booking.status === 'PENDING' ? 'bg-red-600 hover:bg-red-700' : 'bg-orange-600 hover:bg-orange-700'
+                                                        }`}
+                                                        title={
+                                                            booking.status === 'PENDING' 
+                                                                ? "Cancel this pending booking" 
+                                                                : "Cancel this approved booking (Admin action)"
+                                                        }
                                                     >
                                                         ×
                                                     </button>

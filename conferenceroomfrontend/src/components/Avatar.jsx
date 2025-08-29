@@ -75,7 +75,7 @@ const Avatar = ({ user, size = 'md', className = '' }) => {
 
 			{/* Fallback with initials */}
 			<div 
-				className={`w-full h-full rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-medium ${
+				className={`w-full h-full rounded-full bg-gray-700 flex items-center justify-center text-white font-medium ${
 					hasProfilePicture ? 'hidden' : 'flex'
 				}`}
 				style={{ display: hasProfilePicture ? 'none' : 'flex' }}

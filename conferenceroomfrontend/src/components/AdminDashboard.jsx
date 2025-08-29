@@ -185,10 +185,10 @@ const AdminDashboard = () => {
     // Show loading state for the entire dashboard
     if (isDashboardLoading || isBookingsLoading || isUsersLoading || isEmailRequestsLoading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 flex items-center justify-center">
+            <div className="min-h-screen bg-gray-900 flex items-center justify-center">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400 mx-auto"></div>
-                    <p className="mt-3 text-blue-200 text-sm">Loading dashboard data...</p>
+                    <p className="mt-3 text-white text-sm">Loading dashboard data...</p>
                 </div>
             </div>
         );

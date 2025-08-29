@@ -323,12 +323,12 @@ const Profile = () => {
 	}, [currentUser, basicForm, previewUrl]);
 
 	return (
-		<div className="min-h-screen  text-white p-6">
+		<div className="min-h-screen bg-black text-white p-4 sm:p-6">
 			<div className="max-w-4xl mx-auto">
 				{/* Header */}
-				<div className="mb-8">
-					<h1 className="text-2xl font-['Poppins'] text-gray-500 mb-2">Profile Management</h1>
-					<p className="text-gray-400">Manage your account settings and preferences</p>
+				<div className="mb-6 sm:mb-8">
+					<h1 className="text-xl sm:text-2xl font-['Poppins'] text-white mb-2">Profile Management</h1>
+					<p className="text-gray-300 text-sm sm:text-base">Manage your account settings and preferences</p>
 				</div>
 
 				{/* Alert Messages */}
@@ -344,13 +344,13 @@ const Profile = () => {
 				)}
 
 				{/* Tab Navigation */}
-				<div className="flex space-x-1 mb-8 p-1">
+				<div className="flex flex-wrap gap-2 mb-6 sm:mb-8 p-1">
 					<button
 						onClick={() => setActiveTab('basic')}
-						className={`flex items-center space-x-2 px-4 py-2 rounded-full transition-colors ${
+						className={`flex items-center space-x-2 px-3 sm:px-4 py-2 rounded-full transition-colors text-sm sm:text-base ${
 							activeTab === 'basic'
-								? 'bg-white text-gray-700'
-								: 'text-whiite hover:text-white'
+								? 'bg-white text-black'
+								: 'text-white/70 hover:text-white'
 						}`}
 					>
 						<FaUser />
@@ -358,10 +358,10 @@ const Profile = () => {
 					</button>
 					<button
 						onClick={() => setActiveTab('email')}
-						className={`flex items-center space-x-2 px-4 py-2 rounded-full transition-colors ${
+						className={`flex items-center space-x-2 px-3 sm:px-4 py-2 rounded-full transition-colors text-sm sm:text-base ${
 							activeTab === 'email'
-								? 'bg-white text-gray-700'
-								: 'text-whiite hover:text-white'
+								? 'bg-white text-black'
+								: 'text-white/70 hover:text-white'
 						}`}
 					>
 						<FaEnvelope />
@@ -369,10 +369,10 @@ const Profile = () => {
 					</button>
 					<button
 						onClick={() => setActiveTab('password')}
-						className={`flex items-center space-x-2 px-4 py-2 rounded-full transition-colors ${
+						className={`flex items-center space-x-2 px-3 sm:px-4 py-2 rounded-full transition-colors text-sm sm:text-base ${
 							activeTab === 'password'
-								? 'bg-white text-gray-700'
-								: 'text-whiite hover:text-white'
+								? 'bg-white text-black'
+								: 'text-white/70 hover:text-white'
 						}`}
 					>
 						<FaLock />
@@ -381,7 +381,7 @@ const Profile = () => {
 				</div>
 
 				{/* Tab Content */}
-				<div className="bg-gray-900 rounded-lg p-6">
+				<div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-4 sm:p-6">
 					{/* Basic Profile Tab */}
 					{activeTab === 'basic' && (
 						<div>
@@ -390,8 +390,8 @@ const Profile = () => {
 								Basic Information
 							</h2>
 							
-							<form onSubmit={handleBasicUpdate} className="space-y-6">
-								<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+							<form onSubmit={handleBasicUpdate} className="space-y-4 sm:space-y-6">
+								<div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
 									<div>
 										<label className="block text-sm font-medium text-gray-300 mb-2">
 											First Name
@@ -418,43 +418,43 @@ const Profile = () => {
 									</div>
 								</div>
 								
-								<div>
-									<label className="block text-sm font-medium text-gray-300 mb-2">
-										Profile Picture
-									</label>
-									
-									{/* Current Profile Picture Display */}
-									<div className="mb-4 flex items-center space-x-4">
-										<div className="relative">
-											{selectedFile ? (
-												<img
-													src={previewUrl}
-													alt="Profile Preview"
-													className="w-20 h-20 rounded-full object-cover border-2 border-gray-600"
-												/>
-											) : (
-												<Avatar user={currentUser} size="2xl" className="border-2 border-gray-600" />
-											)}
+																	<div>
+										<label className="block text-sm font-medium text-gray-300 mb-2">
+											Profile Picture
+										</label>
+										
+										{/* Current Profile Picture Display */}
+										<div className="mb-4 flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
+											<div className="relative">
+												{selectedFile ? (
+													<img
+														src={previewUrl}
+														alt="Profile Preview"
+														className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-gray-600"
+													/>
+												) : (
+													<Avatar user={currentUser} size="2xl" className="border-2 border-gray-600" />
+												)}
+											</div>
+											<div className="flex-1">
+												<p className="text-sm text-gray-400">
+													{selectedFile ? 'Preview of selected image' : 
+													 currentUser?.profilePictureUrl ? 'Current profile picture' : 'No profile picture set'}
+												</p>
+											</div>
 										</div>
-										<div className="flex-1">
-											<p className="text-sm text-gray-400">
-												{selectedFile ? 'Preview of selected image' : 
-												 currentUser?.profilePictureUrl ? 'Current profile picture' : 'No profile picture set'}
-											</p>
-										</div>
-									</div>
 
 									{/* File Upload Section */}
 									<div>
 										<label className="block text-sm font-medium text-gray-300 mb-2">
 											Upload New Picture
 										</label>
-										<div className="flex items-center space-x-4">
+										<div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
 											<input
 												type="file"
 												accept="image/*"
 												onChange={handleFileSelect}
-												className="flex-1 px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-white file:text-black"
+												className="flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-white file:text-black"
 											/>
 											{selectedFile && (
 												<button
@@ -486,7 +486,7 @@ const Profile = () => {
 								<button
 									type="submit"
 									disabled={loading}
-									className={`w-full px-6 py-3 font-semibold rounded-lg transition-colors flex items-center justify-center space-x-2 ${
+									className={`w-full px-4 sm:px-6 py-2 sm:py-3 font-semibold rounded-lg transition-colors flex items-center justify-center space-x-2 ${
 										loading
 											? 'bg-gray-600 text-gray-400 cursor-not-allowed'
 											: 'bg-white text-black'
@@ -517,13 +517,13 @@ const Profile = () => {
 							</h2>
 
 							{/* Current Email Display */}
-							<div className="mb-6 p-4 bg-gray-700 rounded-lg">
+							<div className="mb-6 p-3 sm:p-4 bg-gray-700 rounded-lg">
 								<h3 className="text-sm font-medium text-gray-300 mb-2">Current Email</h3>
 								<p className="text-white font-medium">{currentUser?.email}</p>
 							</div>
 
 							{/* Role-based Email Change Information */}
-							<div className="mb-6 p-4 bg-blue-500/20 border border-blue-500/50 rounded-lg">
+							<div className="mb-6 p-3 sm:p-4 bg-blue-500/20 border border-blue-500/50 rounded-lg">
 								<h3 className="text-sm font-medium text-blue-200 mb-2">Email Change Policy</h3>
 								{isSystemAdmin ? (
 									<p className="text-blue-100 text-sm">
@@ -541,7 +541,7 @@ const Profile = () => {
 							</div>
 
 							{/* Email Change Form */}
-							<form onSubmit={handleEmailChangeRequest} className="space-y-6 mb-8">
+							<form onSubmit={handleEmailChangeRequest} className="space-y-4 sm:space-y-6 mb-6 sm:mb-8">
 								<h3 className="text-lg font-medium text-white">
 									{isSystemAdmin ? 'Change Email Address' : 'Request Email Change'}
 								</h3>
@@ -579,10 +579,10 @@ const Profile = () => {
 								<button
 									type="submit"
 									disabled={loading}
-									className={`w-full px-6 py-3 font-semibold rounded-lg transition-colors flex items-center justify-center space-x-2 ${
+									className={`w-full px-4 sm:px-6 py-2 sm:py-3 font-semibold rounded-lg transition-colors flex items-center justify-center space-x-2 ${
 										loading
 											? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-											: 'bg-white  text-black'
+											: 'bg-white text-black'
 									}`}
 								>
 									{loading ? (
@@ -590,7 +590,7 @@ const Profile = () => {
 											<FaSpinner className="animate-spin" />
 											<span>Submitting...</span>
 										</>
-									) : (
+										) : (
 										<>
 											<FaEnvelope />
 											<span>{isSystemAdmin ? 'Change Email' : 'Request Email Change'}</span>
@@ -605,8 +605,8 @@ const Profile = () => {
 									<h3 className="text-lg font-medium text-white mb-4">Email Change Requests</h3>
 									<div className="space-y-3">
 										{emailRequests.map((request) => (
-											<div key={request.id} className="p-4 bg-gray-700 rounded-lg">
-												<div className="flex justify-between items-start">
+											<div key={request.id} className="p-3 sm:p-4 bg-gray-700 rounded-lg">
+												<div className="flex flex-col sm:flex-row sm:justify-between sm:items-start space-y-2 sm:space-y-0">
 													<div>
 														<p className="text-white font-medium">
 															{request.currentEmail} → {request.newEmail}
@@ -642,7 +642,7 @@ const Profile = () => {
 								Password Management
 							</h2>
 
-							<form onSubmit={handlePasswordChange} className="space-y-6">
+							<form onSubmit={handlePasswordChange} className="space-y-4 sm:space-y-6">
 								<div>
 									<label className="block text-sm font-medium text-gray-300 mb-2">
 										Current Email Address
@@ -665,10 +665,10 @@ const Profile = () => {
 										type="button"
 										onClick={handleGenerateOtp}
 										disabled={loading || !passwordForm.currentPassword}
-										className={`w-full px-6 py-3 font-semibold rounded-lg transition-colors flex items-center justify-center space-x-2 ${
+										className={`w-full px-4 sm:px-6 py-2 sm:py-3 font-semibold rounded-lg transition-colors flex items-center justify-center space-x-2 ${
 											loading || !passwordForm.currentPassword
 												? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-												: 'bg-white  text-black'
+												: 'bg-white text-black'
 										}`}
 									>
 										{loading ? (
@@ -735,7 +735,7 @@ const Profile = () => {
 										<button
 											type="submit"
 											disabled={loading || passwordForm.newPassword !== passwordForm.confirmPassword}
-											className={`w-full px-6 py-3 font-semibold rounded-lg transition-colors flex items-center justify-center space-x-2 ${
+											className={`w-full px-4 sm:px-6 py-2 sm:py-3 font-semibold rounded-lg transition-colors flex items-center justify-center space-x-2 ${
 												loading || passwordForm.newPassword !== passwordForm.confirmPassword
 													? 'bg-gray-600 text-gray-400 cursor-not-allowed'
 													: 'bg-green-600 hover:bg-green-700 text-white'

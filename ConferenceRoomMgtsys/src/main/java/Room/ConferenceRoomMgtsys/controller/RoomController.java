@@ -35,16 +35,20 @@ import Room.ConferenceRoomMgtsys.service.RoomService;
 import Room.ConferenceRoomMgtsys.dto.room.RoomStatusBulkUpdateDto;
 import Room.ConferenceRoomMgtsys.repository.DayVisibilityRepository;
 import Room.ConferenceRoomMgtsys.model.DayVisibility;
+import Room.ConferenceRoomMgtsys.service.NotificationService;
 
 @RestController
 @RequestMapping(value = "/room")
-@CrossOrigin(origins = { "http://localhost:5173",  "http://10.8.150.139:8090","https://conferenceroomsystem.vercel.app","http://localhost:3001","http://197.243.104.5:3001" })
+@CrossOrigin(origins = { "http://localhost:5173", "http://10.8.150.139:8090",
+        "https://conferenceroomsystem.vercel.app", "http://197.243.104.5"  })
 public class RoomController {
 
     @Autowired
     private RoomService roomService;
     @Autowired
     private DayVisibilityRepository dayVisibilityRepository;
+    @Autowired
+    private NotificationService notificationService;
 
     /**
      * Create a new room
@@ -133,13 +137,14 @@ public class RoomController {
     }
 
     /**
-     * Set which rooms are visible to users for a specific date (org admins and system admin)
+     * Set which rooms are visible to users for a specific date (org admins and
+     * system admin)
      * POST /room/day-visibility
      * Body: { date: '2025-08-21', roomIds: [uuid, uuid] }
      */
     @PostMapping(value = "/day-visibility", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> setDayVisibility(@RequestBody java.util.Map<String, Object> body,
-                                              @AuthenticationPrincipal User currentUser) {
+            @AuthenticationPrincipal User currentUser) {
         try {
             if (currentUser == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -148,7 +153,8 @@ public class RoomController {
             @SuppressWarnings("unchecked")
             java.util.List<String> roomIds = (java.util.List<String>) body.get("roomIds");
             // Remove existing entries for org/date
-            var existing = dayVisibilityRepository.findVisibleByOrganizationAndDate(currentUser.getOrganization(), date);
+            var existing = dayVisibilityRepository.findVisibleByOrganizationAndDate(currentUser.getOrganization(),
+                    date);
             if (existing != null && !existing.isEmpty()) {
                 dayVisibilityRepository.deleteAll(existing);
             }
@@ -161,10 +167,20 @@ public class RoomController {
                     dv.setVisible(true);
                     // Only allow setting rooms within same org unless system admin
                     if (currentUser.getRole() != Room.ConferenceRoomMgtsys.enums.UserRole.SYSTEM_ADMIN &&
-                        !dv.getRoom().getOrganization().equals(currentUser.getOrganization())) {
-                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot set visibility for rooms outside your organization");
+                            !dv.getRoom().getOrganization().equals(currentUser.getOrganization())) {
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                .body("Cannot set visibility for rooms outside your organization");
                     }
                     dayVisibilityRepository.save(dv);
+
+                    // Create notification for room visibility
+                    try {
+                        System.out.println("Creating notification for room visibility: " + dv.getRoom().getName()
+                                + " for date: " + date);
+                        notificationService.createRoomVisibilityNotification(dv.getRoom(), currentUser, date);
+                    } catch (Exception e) {
+                        System.out.println("Failed to create notification for room visibility: " + e.getMessage());
+                    }
                 }
             }
             return ResponseEntity.ok().build();
@@ -325,7 +341,7 @@ public class RoomController {
      */
     @PutMapping(value = "/bulk/status", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> bulkUpdateRoomStatus(@RequestBody RoomStatusBulkUpdateDto dto,
-                                                  @AuthenticationPrincipal User currentUser) {
+            @AuthenticationPrincipal User currentUser) {
         try {
             roomService.bulkUpdateRoomStatus(dto, currentUser);
             return ResponseEntity.ok().build();
@@ -342,7 +358,7 @@ public class RoomController {
     public ResponseEntity<List<RoomAvailabilityDto>> getRoomsWithAvailability(
             @AuthenticationPrincipal User currentUser,
             @RequestParam(required = false) String date) {
-        
+
         try {
             LocalDateTime targetDate;
             if (date != null && !date.isEmpty()) {
@@ -354,7 +370,7 @@ public class RoomController {
             } else {
                 targetDate = LocalDateTime.now();
             }
-            
+
             List<RoomAvailabilityDto> rooms = roomService.getRoomsWithAvailabilityDetails(currentUser, targetDate);
             return new ResponseEntity<>(rooms, HttpStatus.OK);
         } catch (Exception e) {

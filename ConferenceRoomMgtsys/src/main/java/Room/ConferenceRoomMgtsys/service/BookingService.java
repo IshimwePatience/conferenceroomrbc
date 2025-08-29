@@ -65,16 +65,13 @@ public class BookingService {
         if (createDto.getEndTime().isBefore(createDto.getStartTime())) {
             throw new IllegalArgumentException("End time must be after start time.");
         }
-        // Enforce min/max duration and 15-minute slot alignment
+        // Enforce min/max duration only
         long minutes = java.time.Duration.between(createDto.getStartTime(), createDto.getEndTime()).toMinutes();
         if (minutes < 30) {
             throw new IllegalArgumentException("Minimum booking duration is 30 minutes.");
         }
         if (minutes > 8 * 60) {
             throw new IllegalArgumentException("Maximum booking duration is 8 hours.");
-        }
-        if ((createDto.getStartTime().getMinute() % 15) != 0 || (createDto.getEndTime().getMinute() % 15) != 0) {
-            throw new IllegalArgumentException("Bookings must align to 15-minute intervals.");
         }
         
         // Prevent booking too close to current time (less than 5 minutes)

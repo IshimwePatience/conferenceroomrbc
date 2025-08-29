@@ -41,6 +41,7 @@ import Room.ConferenceRoomMgtsys.model.Availability;
 import Room.ConferenceRoomMgtsys.model.RoomCommunication;
 import Room.ConferenceRoomMgtsys.model.Booking;
 import Room.ConferenceRoomMgtsys.dto.room.RoomStatusBulkUpdateDto;
+import Room.ConferenceRoomMgtsys.service.NotificationService;
 
 @Service
 public class RoomService {
@@ -54,6 +55,7 @@ public class RoomService {
     private final RoomCommunicationRepository roomCommunicationRepository;
     private final ObjectMapper objectMapper;
     private final DayVisibilityRepository dayVisibilityRepository;
+    private final NotificationService notificationService;
 
     @Value("${file.upload-dir}")
     private String baseUploadDir;
@@ -66,7 +68,8 @@ public class RoomService {
             AvailabilityRepository availabilityRepository,
             RoomCommunicationRepository roomCommunicationRepository,
             ObjectMapper objectMapper,
-            DayVisibilityRepository dayVisibilityRepository) {
+            DayVisibilityRepository dayVisibilityRepository,
+            NotificationService notificationService) {
         this.roomRepository = roomRepository;
         this.organizationRepository = organizationRepository;
         this.bookingRepository = bookingRepository;
@@ -74,6 +77,7 @@ public class RoomService {
         this.roomCommunicationRepository = roomCommunicationRepository;
         this.objectMapper = objectMapper;
         this.dayVisibilityRepository = dayVisibilityRepository;
+        this.notificationService = notificationService;
     }
 
     @PostConstruct
@@ -204,10 +208,11 @@ public class RoomService {
             java.time.LocalDate today = java.time.LocalDate.now();
             java.time.LocalTime nowTime = java.time.LocalTime.now();
             if (startTime != null && startTime.toLocalDate().isEqual(today)
-                && nowTime.isAfter(java.time.LocalTime.of(17, 0))) {
+                    && nowTime.isAfter(java.time.LocalTime.of(17, 0))) {
                 return java.util.List.of();
             }
-        } catch (Exception ignored) { }
+        } catch (Exception ignored) {
+        }
 
         List<Room> rooms = roomRepository.findAvailableRooms(organization, startTime, endTime);
         // Apply day-visibility whitelist for that date.
@@ -221,7 +226,8 @@ public class RoomService {
                 if (vis == null || vis.isEmpty()) {
                     return java.util.List.of();
                 }
-                java.util.Set<java.util.UUID> allowedIds = vis.stream().map(v -> v.getRoom().getId()).collect(java.util.stream.Collectors.toSet());
+                java.util.Set<java.util.UUID> allowedIds = vis.stream().map(v -> v.getRoom().getId())
+                        .collect(java.util.stream.Collectors.toSet());
                 allowedRooms = rooms.stream().filter(r -> allowedIds.contains(r.getId())).toList();
             }
             if (allowedRooms != null) {
@@ -290,11 +296,12 @@ public class RoomService {
             rooms = roomRepository.findAll(); // Allow regular users to see all rooms
         }
 
-        // Apply day-visibility whitelist for that date (same logic as getAvailableRooms)
+        // Apply day-visibility whitelist for that date (same logic as
+        // getAvailableRooms)
         try {
             java.time.LocalDate selectedDate = date.toLocalDate();
             List<Room> filtered = new java.util.ArrayList<>(rooms);
-            
+
             // For regular users, apply organization-based visibility filtering
             if (currentUser.getRole() == UserRole.USER) {
                 // If user has no organization assigned → default deny
@@ -318,7 +325,7 @@ public class RoomService {
                         .toList();
                 filtered = new java.util.ArrayList<>(allowedRooms);
             }
-            
+
             return filtered.stream()
                     .map(room -> convertToAvailabilityDto(room, date))
                     .collect(Collectors.toList());
@@ -362,41 +369,41 @@ public class RoomService {
 
     private List<RoomAvailabilityDto.TimeSlotDto> generateTimeSlots(Room room, LocalDateTime date) {
         List<RoomAvailabilityDto.TimeSlotDto> timeSlots = new ArrayList<>();
-        
+
         // Generate 1-hour slots from 7 AM to 5 PM
         for (int hour = 7; hour < 17; hour++) {
             LocalDateTime slotStart = date.toLocalDate().atTime(hour, 0);
             LocalDateTime slotEnd = date.toLocalDate().atTime(hour + 1, 0);
-            
+
             RoomAvailabilityDto.TimeSlotDto timeSlot = new RoomAvailabilityDto.TimeSlotDto();
             timeSlot.setStartTime(slotStart.toString());
             timeSlot.setEndTime(slotEnd.toString());
-            
+
             // Check if this time slot is available
             boolean isAvailable = isTimeSlotAvailable(room, slotStart, slotEnd);
             timeSlot.setAvailable(isAvailable);
             timeSlot.setStatus(isAvailable ? "AVAILABLE" : "BOOKED");
-            
+
             timeSlots.add(timeSlot);
         }
-        
+
         return timeSlots;
     }
 
     private boolean isTimeSlotAvailable(Room room, LocalDateTime startTime, LocalDateTime endTime) {
         // Check if there are any approved bookings that overlap with this time slot
         List<Booking> overlappingBookings = bookingRepository.findOverlappingBookings(
-            room, startTime, endTime);
-        
+                room, startTime, endTime);
+
         return overlappingBookings.isEmpty();
     }
 
     private List<RoomAvailabilityDto.BookingDetailDto> getTodaysBookings(Room room, LocalDateTime date) {
         LocalDateTime dayStart = date.toLocalDate().atTime(0, 0);
         LocalDateTime dayEnd = date.toLocalDate().atTime(23, 59, 59);
-        
+
         List<Booking> todaysBookings = bookingRepository.findByRoomAndStartTimeBetween(room, dayStart, dayEnd);
-        
+
         return todaysBookings.stream()
                 .map(this::convertBookingToDetailDto)
                 .collect(Collectors.toList());
@@ -451,11 +458,22 @@ public class RoomService {
             Room room = roomRepository.findById(roomId)
                     .orElseThrow(() -> new IllegalArgumentException("Room not found: " + roomId));
             if (currentUser.getRole() != UserRole.SYSTEM_ADMIN &&
-                (room.getOrganization() == null || !room.getOrganization().equals(currentUser.getOrganization()))) {
+                    (room.getOrganization() == null || !room.getOrganization().equals(currentUser.getOrganization()))) {
                 throw new IllegalArgumentException("Cannot modify rooms outside your organization");
             }
             room.setIsActive(activate);
             roomRepository.save(room);
+
+            // Create notification when room is activated
+            if (activate && room.getIsActive()) {
+                try {
+                    logger.info("Creating notification for room {} activation by user {}", roomId, currentUser.getId());
+                    notificationService.createRoomAvailableNotification(room, currentUser);
+                    logger.info("Successfully created notification for room {}", roomId);
+                } catch (Exception e) {
+                    logger.error("Failed to create notification for room {}: {}", roomId, e.getMessage(), e);
+                }
+            }
         }
     }
 
