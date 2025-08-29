@@ -337,7 +337,11 @@ const Login = ({ setIsLoggedIn, setUserRole }) => {
             </button>
             
             <p className="text-center youtube-text-sm text-white/60">
-                Don't have an account? <Link to="/register" className="text-purple-400 hover:text-purple-300 transition-colors">Register here</L>
+
+  
+
+                Don't have an account? <Link to="/register" className="text-purple-400 hover:text-purple-300 transition-colors">Register here</Link>
+
             </p>
         </form>
     );

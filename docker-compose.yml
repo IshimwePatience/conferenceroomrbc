@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./ConferenceRoomMgtsys
+    container_name: conference-room-api
+    ports:
+      - "8084:8084"  
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://metabase-postgres:5432/rbcconferenceroomdatabase
+      SPRING_DATASOURCE_USERNAME: metabase
+      SPRING_DATASOURCE_PASSWORD: MetabaseSecure123!
+      MAIL_USERNAME: ishimweaugstin12@gmail.com
+      MAIL_PASSWORD: pubu gvqg xyek nbaf
+      JWT_SECRET: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      APP_FRONTEND_URL: http://197.243.104.5/conferenceroomsys
+      SERVER_PORT: 8084  
+    volumes:
+      - ./Uploads:/app/uploads
+    networks:
+      - metabase-deployment_metabase-network
+
+  frontend:
+    build: ./conferenceroomfrontend
+    container_name: conference-room-frontend
+    # No ports exposed since Nginx serves static files
+    volumes:
+      - /var/www/conferenceroomrbc/conferenceroomfrontend/dist:/app/dist
+    environment:
+      REACT_APP_BACKEND_URL: http://conference-room-api:8084  # Updated to new backend port
+    networks:
+      - metabase-deployment_metabase-network
+
+networks:
+  metabase-deployment_metabase-network:
+    external: true
+
+volumes:
+  uploads:
