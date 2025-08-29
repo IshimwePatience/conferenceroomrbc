@@ -4,6 +4,7 @@ import SystemAdminRegister from './SystemAdminRegister';
 import meetingImg from '../assets/images/meeting.jpg';
 import rbc from '../assets/images/rbc.png';
 import rbcheader from '../assets/images/rbcphoto.png';
+import { Link } from 'react-router-dom';
 
 const Register = () => {
     const [registrationType, setRegistrationType] = useState('user');
@@ -382,7 +383,7 @@ const Register = () => {
                     </div>
 
                     <p className="text-center youtube-text-sm text-white/60 mt-6 md:mt-4 scaled:mt-6">
-                        Already have an account? <a href="/login" className="text-purple-400 hover:text-purple-300 transition-colors">Login</a>
+                        Already have an account? <Link to="/login" className="text-purple-400 hover:text-purple-300 transition-colors">Login</Link>
                     </p>
 
                     {/* Terms and Conditions */}
