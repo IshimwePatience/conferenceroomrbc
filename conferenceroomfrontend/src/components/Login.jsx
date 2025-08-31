@@ -363,7 +363,7 @@ const Login = ({ setIsLoggedIn, setUserRole }) => {
                 className={`youtube-button text-white hover:shadow-lg transition-all ${
                     isSubmitting 
                         ? 'bg-gray-500 cursor-not-allowed hover:shadow-none' 
-                        : 'bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-500 hover:shadow-purple-500/25'
+                        : 'bg-gray-900'
                 }`}
             >
                 {isSubmitting ? 'Verifying...' : 'Verify Code'}
