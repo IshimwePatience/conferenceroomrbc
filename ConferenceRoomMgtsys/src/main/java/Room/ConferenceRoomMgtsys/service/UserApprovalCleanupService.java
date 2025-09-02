@@ -1,6 +1,7 @@
 package Room.ConferenceRoomMgtsys.service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,7 @@ public class UserApprovalCleanupService {
     @Scheduled(fixedRate = 3600000) // Run every hour (1 hour = 3600000 milliseconds)
     @Transactional
     public void cleanupUnapprovedUsers() {
-        LocalDateTime fiveHoursAgo = LocalDateTime.now().minusHours(5);
+        LocalDateTime fiveHoursAgo = LocalDateTime.now(ZoneId.of("Africa/Kigali")).minusHours(5);
         
         // Find all users that are still pending and were created more than 5 hours ago
         List<User> unapprovedUsers = userRepository.findByApprovalStatusAndCreatedAtBefore(

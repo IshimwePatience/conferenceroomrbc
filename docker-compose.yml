@@ -7,6 +7,7 @@ services:
     ports:
       - "8084:8084"  
     environment:
+      TZ: Africa/Kigali
       SPRING_DATASOURCE_URL: jdbc:postgresql://metabase-postgres:5432/rbcconferenceroomdatabase
       SPRING_DATASOURCE_USERNAME: metabase
       SPRING_DATASOURCE_PASSWORD: MetabaseSecure123!

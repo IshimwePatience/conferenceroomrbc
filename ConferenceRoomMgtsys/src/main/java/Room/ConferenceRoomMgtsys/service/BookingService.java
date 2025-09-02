@@ -1,6 +1,7 @@
 package Room.ConferenceRoomMgtsys.service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -54,8 +55,8 @@ public class BookingService {
 
     @Transactional
     public BookingResponseDto createBooking(BookingCreateDto createDto, User user) {
-        // Prevent booking in the past
-        LocalDateTime now = LocalDateTime.now();
+        // Prevent booking in the past - use Africa/Kigali timezone
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Africa/Kigali"));
         if (createDto.getStartTime() == null || createDto.getEndTime() == null) {
             throw new IllegalArgumentException("Start time and end time are required.");
         }
@@ -136,8 +137,8 @@ public class BookingService {
             throw new IllegalArgumentException("You have already created an identical booking for this room, time, and purpose. Please check your existing bookings.");
         }
         
-        // Check for recent duplicate attempts (within last 5 minutes) to prevent rapid clicking
-        LocalDateTime fiveMinutesAgo = LocalDateTime.now().minusMinutes(5);
+        // Prevent duplicate bookings within 5 minutes - use Africa/Kigali timezone
+        LocalDateTime fiveMinutesAgo = LocalDateTime.now(ZoneId.of("Africa/Kigali")).minusMinutes(5);
         List<Booking> recentAttempts = bookingRepository.findRecentDuplicateAttempts(user, room, fiveMinutesAgo);
         
         if (!recentAttempts.isEmpty()) {
@@ -474,7 +475,10 @@ public class BookingService {
 
     @Transactional(readOnly = true)
     public List<BookingResponseDto> getOngoingBookingsGlobal(LocalDateTime currentTime) {
-        List<Booking> bookings = bookingRepository.findOngoingApprovedBookings(currentTime);
+        // Use Africa/Kigali timezone for consistent timezone handling
+        LocalDateTime kigaliTime = currentTime.atZone(ZoneId.of("Africa/Kigali"))
+                .toLocalDateTime();
+        List<Booking> bookings = bookingRepository.findOngoingApprovedBookings(kigaliTime);
         return bookings.stream()
                 .map(this::convertToDto)
                 .toList();
@@ -605,11 +609,11 @@ public class BookingService {
 
     /**
      * Automatically reject all pending bookings whose start time has passed.
-     * Runs every 10 seconds for better responsiveness.
+     * Runs every 5 minutes for better performance and less aggressive rejection.
      */
-    @Scheduled(fixedRate = 10000) // every 10 seconds
+    @Scheduled(fixedRate = 300000) // every 5 minutes instead of 10 seconds
     public void autoRejectExpiredPendingBookings() {
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Africa/Kigali"));
         List<Booking> expiredPending = bookingRepository.findByStatusAndStartTimeBefore(BookingStatus.PENDING, now);
         for (Booking booking : expiredPending) {
             booking.setStatus(BookingStatus.REJECTED);
@@ -624,16 +628,16 @@ public class BookingService {
     }
     
     /**
-     * Automatically reject pending bookings that are very close to starting (within 2 minutes).
-     * This provides faster rejection for urgent cases.
+     * Automatically reject pending bookings that are very close to starting (within 30 minutes).
+     * This provides reasonable time for admin approval while preventing last-minute conflicts.
      */
-    @Scheduled(fixedRate = 5000) // every 5 seconds
+    @Scheduled(fixedRate = 300000) // every 5 minutes instead of 5 seconds
     public void autoRejectImminentPendingBookings() {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime imminentThreshold = now.plusMinutes(2);
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Africa/Kigali"));
+        LocalDateTime imminentThreshold = now.plusMinutes(30); // Changed from 2 minutes to 30 minutes
         List<Booking> imminentPending = bookingRepository.findByStatusAndStartTimeBefore(BookingStatus.PENDING, imminentThreshold);
         for (Booking booking : imminentPending) {
-            if (booking.getStartTime().isBefore(now.plusMinutes(2))) {
+            if (booking.getStartTime().isBefore(now.plusMinutes(30))) { // Changed from 2 minutes to 30 minutes
                 booking.setStatus(BookingStatus.REJECTED);
                 bookingRepository.save(booking);
                 // Notify the user immediately
@@ -641,7 +645,7 @@ public class BookingService {
                         booking.getUser().getEmail(),
                         "Booking Automatically Rejected - Too Close to Start Time",
                         "Your booking for room: " + booking.getRoom().getName()
-                                + " was automatically rejected because it was not approved and is too close to the start time.");
+                                + " was automatically rejected because it was not approved and is too close to the start time (within 30 minutes).");
             }
         }
     }

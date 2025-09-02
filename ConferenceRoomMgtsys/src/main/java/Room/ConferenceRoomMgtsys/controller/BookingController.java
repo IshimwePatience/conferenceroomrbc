@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
@@ -61,7 +62,9 @@ public class BookingController {
     @GetMapping("/upcoming")
     public ResponseEntity<?> getUpcomingBookingsForUser(@AuthenticationPrincipal User currentUser) {
         try {
-            return ResponseEntity.ok(bookingService.getUpcomingBookingsByUser(currentUser, LocalDateTime.now()));
+            // Use Africa/Kigali timezone for consistent timezone handling
+            LocalDateTime kigaliTime = LocalDateTime.now(ZoneId.of("Africa/Kigali"));
+            return ResponseEntity.ok(bookingService.getUpcomingBookingsByUser(currentUser, kigaliTime));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -70,7 +73,9 @@ public class BookingController {
     @GetMapping("/all/upcoming")
     public ResponseEntity<?> getAllUpcomingBookings() {
         try {
-            return ResponseEntity.ok(bookingService.getAllUpcomingBookings(LocalDateTime.now()));
+            // Use Africa/Kigali timezone for consistent timezone handling
+            LocalDateTime kigaliTime = LocalDateTime.now(ZoneId.of("Africa/Kigali"));
+            return ResponseEntity.ok(bookingService.getAllUpcomingBookings(kigaliTime));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -123,7 +128,9 @@ public class BookingController {
 
     @GetMapping("/ongoing")
     public List<BookingResponseDto> getOngoingBookings() {
-        return bookingService.getOngoingBookingsGlobal(LocalDateTime.now());
+        // Use Africa/Kigali timezone for consistent timezone handling
+        LocalDateTime kigaliTime = LocalDateTime.now(ZoneId.of("Africa/Kigali"));
+        return bookingService.getOngoingBookingsGlobal(kigaliTime);
     }
 
     /**

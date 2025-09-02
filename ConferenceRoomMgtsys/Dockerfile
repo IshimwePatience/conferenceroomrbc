@@ -1,5 +1,9 @@
 FROM openjdk:17-jdk-slim
 
+# Set timezone to Africa/Kigali
+ENV TZ=Africa/Kigali
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
 # Set working directory
 WORKDIR /app
 
@@ -17,8 +21,8 @@ RUN chmod +x mvnw
 # Build the application
 RUN ./mvnw clean package -DskipTests
 
-# Expose port
-EXPOSE 8080
+# Expose port (updated to match application.properties)
+EXPOSE 8084
 
 # Run the application
 CMD java -jar target/*.jar

@@ -14,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -139,7 +140,7 @@ public class NotificationService {
                     + ", CreatedAt=" + n.getCreatedAt());
         }
 
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Africa/Kigali"));
         LocalDateTime twentyFourHoursAgo = now.minusHours(24);
 
         // Filter notifications based on read status and time
@@ -186,7 +187,7 @@ public class NotificationService {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new RuntimeException("Notification not found"));
         notification.setIsRead(true);
-        notification.setReadAt(LocalDateTime.now());
+        notification.setReadAt(LocalDateTime.now(ZoneId.of("Africa/Kigali")));
 
         Notification savedNotification = notificationRepository.save(notification);
         webSocketNotificationService.sendNotification(notification.getUser(), savedNotification);
@@ -200,7 +201,7 @@ public class NotificationService {
         System.out.println(
                 "Marking " + unreadNotifications.size() + " notifications as read for user: " + user.getEmail());
 
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Africa/Kigali"));
         for (Notification notification : unreadNotifications) {
             notification.setIsRead(true);
             notification.setReadAt(now);
@@ -216,7 +217,7 @@ public class NotificationService {
      */
     @Transactional
     public void cleanupOldReadNotifications() {
-        LocalDateTime cutoffTime = LocalDateTime.now().minusHours(24);
+        LocalDateTime cutoffTime = LocalDateTime.now(ZoneId.of("Africa/Kigali")).minusHours(24);
         Pageable pageable = org.springframework.data.domain.PageRequest.of(0, 1000);
 
         Page<Notification> oldReadNotifications = notificationRepository.findOldReadNotifications(cutoffTime, pageable);
