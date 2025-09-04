@@ -151,25 +151,25 @@ const ManageUsers = () => {
                 {error && <div className="mb-4 p-3 bg-red-500/20 text-red-300 border border-red-500/50 rounded-lg">{error}</div>}
                 {success && <div className="mb-4 p-3 bg-green-500/20 text-green-300 border border-green-500/50 rounded-lg">{success}</div>}
 
-                <div className="mb-6 flex flex-wrap gap-4 items-center">
+                <div className="mb-6 flex flex-wrap gap-4 items-center bg-black p-3 rounded-sm">
                     <div className="relative flex-grow md:flex-grow-0">
                         <input
                             type="text"
                             placeholder="Search users by name or email..."
                             value={searchTerm}
                             onChange={handleSearch}
-                            className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full pl-10 pr-4 py-2 bg-black rounded-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                         <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     </div>
                     {userRole === 'SYSTEM_ADMIN' && (
                         <Listbox value={organizationFilter} onChange={setOrganizationFilter} as={Fragment}>
                             <div className="relative w-full sm:w-auto">
-                                <Listbox.Button className="w-full sm:w-auto text-sm py-1 px-2 bg-gray-800 border border-gray-700 rounded-sm text-white flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <Listbox.Button className="w-full sm:w-auto text-sm py-1 px-2 bg-black rounded-sm text-white flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-blue-500">
                                     {organizationOptions.find(o => o.id === organizationFilter)?.name}
                                     <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
                                 </Listbox.Button>
-                                <Listbox.Options className="absolute z-10 mt-1 w-full sm:w-48 bg-gray-900 border border-gray-700 rounded-lg shadow-lg py-1 text-base ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                <Listbox.Options className="absolute z-10 mt-1 w-full sm:w-48 bg-black rounded-sm shadow-lg py-1 text-base ring-1 ring-black ring-opacity-5 focus:outline-none">
                                     {organizationOptions.map(option => (
                                         <Listbox.Option key={option.id} value={option.id} as={Fragment}>
                                             {({ active, selected }) => (
@@ -183,9 +183,9 @@ const ManageUsers = () => {
                     )}
                 </div>
 
-                <div className="bg-gray-800 border border-gray-700 rounded-sm overflow-x-auto">
+                <div className="bg-black rounded-sm overflow-x-auto">
                     <table className="w-full min-w-full divide-y divide-gray-700">
-                        <thead className="bg-gray-800">
+                        <thead className="bg-black">
                             <tr>
                                 <th className="py-3 px-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Name</th>
                                 <th className="py-3 px-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Email</th>
@@ -197,9 +197,9 @@ const ManageUsers = () => {
                                 }
                             </tr>
                         </thead>
-                        <tbody className="bg-gray-800 divide-y divide-gray-700">
+                        <tbody className="bg-black divide-y divide-gray-700">
                             {users.map(user => (
-                                <tr key={user.id} className="hover:bg-gray-700/50 transition-colors">
+                                <tr key={user.id} className="hover:bg-gray-800/50 transition-colors">
                                     <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-white">{user.firstName} {user.lastName}</td>
                                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-300">{user.email}</td>
                                     <td className="px-4 py-3 whitespace-nowrap">
@@ -228,7 +228,7 @@ const ManageUsers = () => {
                                             <select
                                                 value={user.role}
                                                 onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                                                className="px-2 py-1 bg-gray-700 border border-gray-600 rounded-md text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                className="px-2 py-1 bg-gray-800 border border-gray-700 rounded-md text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                 disabled={user.role === 'SYSTEM_ADMIN'}
                                             >
                                                 <option value="USER">User</option>
