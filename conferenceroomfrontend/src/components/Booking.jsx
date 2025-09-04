@@ -54,6 +54,8 @@ const Booking = () => {
     // Room-day visibility (from PlanningCalendar settings)
     const [isRoomVisibleOnSelectedDay, setIsRoomVisibleOnSelectedDay] = useState(true);
     const [visibilityMessage, setVisibilityMessage] = useState('');
+    // Room visibility across Monday-Friday of the selected week (for recurring enablement)
+    const [isRoomVisibleAllWeek, setIsRoomVisibleAllWeek] = useState(true);
     // Recurrence
     const [isRecurring, setIsRecurring] = useState(false);
     const [recurrencePattern, setRecurrencePattern] = useState('WEEKLY'); // WEEKLY | DAILY | CUSTOM:TUESDAY,THURSDAY
@@ -137,6 +139,7 @@ const Booking = () => {
         if (!room || !startTime) {
             setIsRoomVisibleOnSelectedDay(true);
             setVisibilityMessage('');
+            setIsRoomVisibleAllWeek(true);
             return;
         }
         try {
@@ -161,10 +164,40 @@ const Booking = () => {
                     // If API fails, do not block but show hint
                     setIsRoomVisibleOnSelectedDay(true);
                 });
+
+            // Compute Monday of the selected week
+            const dayIdx = selectedDate.getDay(); // 0 Sun..6 Sat
+            const diffToMonday = (dayIdx + 6) % 7; // 0 if Monday
+            const monday = new Date(selectedDate);
+            monday.setDate(selectedDate.getDate() - diffToMonday);
+            monday.setHours(0,0,0,0);
+            const weekdays = [0,1,2,3,4].map(i => {
+                const d = new Date(monday);
+                d.setDate(monday.getDate() + i);
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const da = String(d.getDate()).padStart(2, '0');
+                return `${y}-${m}-${da}T00:00:00`;
+            });
+            Promise.all(weekdays.map(dateStr => api.get('/room/availability', { params: { date: dateStr } }).then(r => r.data || []).catch(() => [])))
+                .then(results => {
+                    const allVisible = results.every(list => list.some(r => r.id === room.id || r.name === room.name));
+                    setIsRoomVisibleAllWeek(allVisible);
+                })
+                .catch(() => setIsRoomVisibleAllWeek(true));
         } catch (_) {
             setIsRoomVisibleOnSelectedDay(true);
+            setIsRoomVisibleAllWeek(true);
         }
     }, [startTime, room]);
+
+    // Auto-disable Recurring controls when not allowed
+    useEffect(() => {
+        const recurringAllowed = isRoomVisibleOnSelectedDay && isRoomVisibleAllWeek;
+        if (!recurringAllowed && isRecurring) {
+            setIsRecurring(false);
+        }
+    }, [isRoomVisibleOnSelectedDay, isRoomVisibleAllWeek]);
 
     // Filtering, sorting, and pagination for all bookings
     let filteredBookings = bookings || [];
@@ -206,6 +239,11 @@ const Booking = () => {
         // Enforce room-day visibility policy
         if (!isRoomVisibleOnSelectedDay) {
             setFormError('This room is not available to book on the selected day. Please choose another day.');
+            return;
+        }
+        // Enforce weekday visibility for recurring
+        if (isRecurring && !isRoomVisibleAllWeek) {
+            setFormError('Recurring bookings are allowed only when the room is visible Monday to Friday for the selected week.');
             return;
         }
         
@@ -1010,12 +1048,12 @@ const Booking = () => {
                         {/* Recurrence Controls */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4">
                             <div className="flex items-center space-x-2">
-                                <input type="checkbox" id="isRecurring" checked={isRecurring} onChange={(e)=>setIsRecurring(e.target.checked)} />
+                                <input type="checkbox" id="isRecurring" checked={isRecurring} onChange={(e)=>setIsRecurring(e.target.checked)} disabled={!isRoomVisibleOnSelectedDay || !isRoomVisibleAllWeek} />
                                 <label htmlFor="isRecurring" className="text-sm text-gray-300">Recurring</label>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-300 mb-1">Pattern</label>
-                                <select disabled={!isRecurring} value={recurrencePattern} onChange={(e)=>setRecurrencePattern(e.target.value)} className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white">
+                                <select disabled={!isRecurring || !isRoomVisibleOnSelectedDay || !isRoomVisibleAllWeek} value={recurrencePattern} onChange={(e)=>setRecurrencePattern(e.target.value)} className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white">
                                     <option value="WEEKLY">Weekly</option>
                                     <option value="DAILY">Daily (Mon-Fri)</option>
                                     <option value="CUSTOM:TUESDAY,THURSDAY">Custom: Tue & Thu</option>
@@ -1025,7 +1063,7 @@ const Booking = () => {
                                 <label className="block text-sm font-medium text-gray-300 mb-1">Repeat Until</label>
                                 <input 
                                     type="datetime-local" 
-                                    disabled={!isRecurring} 
+                                    disabled={!isRecurring || !isRoomVisibleOnSelectedDay || !isRoomVisibleAllWeek} 
                                     value={recurrenceEndDate} 
                                     onChange={(e)=>setRecurrenceEndDate(e.target.value)} 
                                     min={startTime || (() => {
