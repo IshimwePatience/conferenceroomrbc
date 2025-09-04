@@ -329,6 +329,10 @@ public class NotificationService {
                     dto.setVisibleDate(java.time.LocalDate.parse(m.group(1)));
                 }
             }
+            // Final fallback: use notification creation date (Kigali)
+            if (dto.getVisibleDate() == null && notification.getCreatedAt() != null) {
+                dto.setVisibleDate(notification.getCreatedAt().atZone(java.time.ZoneId.of("Africa/Kigali")).toLocalDate());
+            }
         } catch (Exception ignored) {}
 
         return dto;
