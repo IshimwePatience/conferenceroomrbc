@@ -647,7 +647,7 @@ const Booking = () => {
                         ) : (
                             <div>
                                 <table className="w-full min-w-[800px] divide-y divide-gray-700 text-xs sm:text-sm">
-                                    <thead className="bg-gray-800">
+                                    <thead className="bg-black">
                                         <tr>
                                             {(userRole === 'ADMIN' || userRole === 'SYSTEM_ADMIN') && (
                                                 <>
