@@ -520,10 +520,16 @@ const Booking = () => {
 
     const handleAdminCancelBooking = async (bookingId) => {
         if (window.confirm("Are you sure you want to cancel this booking as an administrator?")) {
+            const reason = window.prompt('Add a short note to inform the user (required):', 'We have an emergency');
+            if (reason === null || reason.trim() === '') {
+                setActionError('Cancellation note is required for admin cancellations.');
+                setTimeout(() => setActionError(''), 2500);
+                return;
+            }
             setActionError(''); setActionSuccess('');
             try {
-                // For admin cancellation, use the admin-specific endpoint
-                await api.post(`/booking/${bookingId}/admin-cancel`);
+                // For admin cancellation, use the admin-specific endpoint and include reason
+                await api.post(`/booking/${bookingId}/admin-cancel`, { reason });
                 setActionSuccess('Booking cancelled successfully by administrator.');
                 setTimeout(() => setActionSuccess(''), 3000);
             } catch (err) {
