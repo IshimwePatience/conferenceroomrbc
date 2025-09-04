@@ -300,7 +300,7 @@ public class NotificationService {
             organizationName = room.getOrganization().getName();
         }
 
-        return new FrontendNotificationDto(
+        FrontendNotificationDto dto = new FrontendNotificationDto(
                 notification.getId().toString(),
                 room != null ? room.getName() : "Unknown Room",
                 adminName,
@@ -308,6 +308,20 @@ public class NotificationService {
                 organizationName,
                 notification.getCreatedAt(),
                 notification.getType().name());
+
+        // Try to parse a visible date from the message when present
+        try {
+            String msg = notification.getMessage();
+            if (msg != null && msg.contains("available for booking on")) {
+                // Expecting: ... available for booking on YYYY-MM-DD
+                int idx = msg.indexOf("available for booking on");
+                String after = msg.substring(idx + "available for booking on".length()).trim();
+                String dateStr = after.split("[ .]")[0];
+                dto.setVisibleDate(java.time.LocalDate.parse(dateStr));
+            }
+        } catch (Exception ignored) {}
+
+        return dto;
     }
 
     private NotificationResponseDto convertToDto(Notification notification) {

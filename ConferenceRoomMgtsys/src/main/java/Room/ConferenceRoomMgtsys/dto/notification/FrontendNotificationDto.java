@@ -1,5 +1,6 @@
 package Room.ConferenceRoomMgtsys.dto.notification;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class FrontendNotificationDto {
@@ -10,6 +11,8 @@ public class FrontendNotificationDto {
     private String organizationName;
     private LocalDateTime createdAt;
     private String type;
+    // Optional fields for UI enhancements
+    private LocalDate visibleDate; // when a room is made visible for a particular date
 
     public FrontendNotificationDto() {
     }
@@ -80,5 +83,13 @@ public class FrontendNotificationDto {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public LocalDate getVisibleDate() {
+        return visibleDate;
+    }
+
+    public void setVisibleDate(LocalDate visibleDate) {
+        this.visibleDate = visibleDate;
     }
 }
