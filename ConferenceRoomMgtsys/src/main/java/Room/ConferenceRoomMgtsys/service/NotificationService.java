@@ -75,7 +75,7 @@ public class NotificationService {
                 adminUser.getFirstName() + " " + adminUser.getLastName(),
                 adminUser.getRole(),
                 room.getOrganization() != null ? room.getOrganization().getName() : "Unknown Organization");
-        String actionUrl = "/rooms/" + room.getId();
+        String actionUrl = "/rooms/" + room.getId() + "?visibleDate=" + todayKigali.toString();
 
         // Create notifications for all active users (except the admin who made the room
         // available)
@@ -328,6 +328,14 @@ public class NotificationService {
                 if (m.find()) {
                     dto.setVisibleDate(java.time.LocalDate.parse(m.group(1)));
                 }
+            }
+            // Parse from actionUrl query param if present
+            if (dto.getVisibleDate() == null && notification.getActionUrl() != null && notification.getActionUrl().contains("visibleDate=")) {
+                String q = notification.getActionUrl();
+                int i = q.indexOf("visibleDate=");
+                String value = q.substring(i + "visibleDate=".length());
+                if (value.contains("&")) value = value.substring(0, value.indexOf('&'));
+                dto.setVisibleDate(java.time.LocalDate.parse(value));
             }
             // Final fallback: use notification creation date (Kigali)
             if (dto.getVisibleDate() == null && notification.getCreatedAt() != null) {
