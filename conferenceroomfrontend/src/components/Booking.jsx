@@ -574,25 +574,25 @@ const Booking = () => {
                     </div>
 
                     {/* Search, Filter, Sort Controls */}
-                    <div className="mb-6 flex flex-wrap gap-4 items-center">
+                    <div className="mb-6 flex flex-wrap gap-4 items-center bg-black p-3 rounded-sm border border-gray-700">
                         <div className="relative flex-grow md:flex-grow-0">
                             <input
                                 type="text"
                                 placeholder="Search bookings..."
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full pl-10 pr-4 py-2 bg-black border border-gray-700 rounded-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                             <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                         </div>
                         {/* Status Dropdown */}
                         <Listbox value={statusFilter} onChange={setStatusFilter} as={Fragment}>
                             <div className="relative w-full sm:w-auto">
-                                <Listbox.Button className="w-full sm:w-auto text-sm py-1 px-2 bg-gray-800 border border-gray-700 rounded-sm text-white flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <Listbox.Button className="w-full sm:w-auto text-sm py-1 px-2 bg-black border border-gray-700 rounded-sm text-white flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-blue-500">
                                     {statusOptions.find(o => o.value === statusFilter)?.label}
                                     <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
                                 </Listbox.Button>
-                                <Listbox.Options className="absolute z-10 mt-1 w-full sm:w-48 bg-gray-900 border border-gray-700 rounded-sm shadow-lg py-1 text-base ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                <Listbox.Options className="absolute z-10 mt-1 w-full sm:w-48 bg-black border border-gray-700 rounded-sm shadow-lg py-1 text-base ring-1 ring-black ring-opacity-5 focus:outline-none">
                                     {statusOptions.map(option => (
                                         <Listbox.Option key={option.value} value={option.value} as={Fragment}>
                                             {({ active, selected }) => (
@@ -606,11 +606,11 @@ const Booking = () => {
                         {/* Sort Dropdown */}
                         <Listbox value={sortOrder} onChange={setSortOrder} as={Fragment}>
                             <div className="relative w-full sm:w-auto">
-                                <Listbox.Button className="w-full sm:w-auto text-sm py-1 px-2 bg-gray-800 border border-gray-700 rounded-sm text-white flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <Listbox.Button className="w-full sm:w-auto text-sm py-1 px-2 bg-black border border-gray-700 rounded-sm text-white flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-blue-500">
                                     {sortOptions.find(o => o.value === sortOrder)?.label}
                                     <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
                                 </Listbox.Button>
-                                <Listbox.Options className="absolute z-10 mt-1 w-full sm:w-48 bg-gray-900 border border-gray-700 rounded-sm shadow-lg py-1 text-base ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                <Listbox.Options className="absolute z-10 mt-1 w-full sm:w-48 bg-black border border-gray-700 rounded-sm shadow-lg py-1 text-base ring-1 ring-black ring-opacity-5 focus:outline-none">
                                     {sortOptions.map(option => (
                                         <Listbox.Option key={option.value} value={option.value} as={Fragment}>
                                             {({ active, selected }) => (
@@ -630,7 +630,7 @@ const Booking = () => {
                         </div>
                     )}
                     {/* Bookings Table */}
-                    <div className="bg-gray-800 border border-gray-700 rounded-sm overflow-hidden">
+                    <div className="bg-black border border-gray-700 rounded-sm overflow-hidden">
                         {!paginatedBookings || paginatedBookings.length === 0 ? (
                             <div className="text-center py-16">
                                 <h3 className="text-xl font-bold text-white mb-2">No Bookings Found</h3>

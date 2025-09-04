@@ -240,14 +240,33 @@ const UserLayoutWrapper = ({ children, setIsLoggedIn }) => {
                                                         </div>
                                                         <div className="flex-1 min-w-0">
                                                             <p className="text-sm text-white font-medium">
-                                                                New room available: {notification.roomName}
+                                                                {notification.type === 'BOOKING_CANCELLED'
+                                                                    ? `Booking cancelled: ${notification.roomName}`
+                                                                    : `New room available: ${notification.roomName}`}
                                                             </p>
-                                                            <p className="text-xs text-gray-400 mt-1">
-                                                                Added by {notification.adminName} ({notification.adminRole})
-                                                            </p>
-                                                            <p className="text-xs text-gray-400">
-                                                                Organization: {notification.organizationName}
-                                                            </p>
+                                                            {/* Details line */}
+                                                            {notification.type === 'BOOKING_CANCELLED' ? (
+                                                                <>
+                                                                    {notification.reason && (
+                                                                        <p className="text-xs text-red-300 mt-1">Reason: {notification.reason}</p>
+                                                                    )}
+                                                                    {notification.bookingDate && (
+                                                                        <p className="text-xs text-gray-400">Date: {new Date(notification.bookingDate).toLocaleString()}</p>
+                                                                    )}
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <p className="text-xs text-gray-400 mt-1">
+                                                                        Added by {notification.adminName} ({notification.adminRole})
+                                                                    </p>
+                                                                    <p className="text-xs text-gray-400">
+                                                                        Organization: {notification.organizationName}
+                                                                    </p>
+                                                                    {notification.visibleDate && (
+                                                                        <p className="text-xs text-gray-400">Visible on: {new Date(notification.visibleDate).toLocaleDateString()}</p>
+                                                                    )}
+                                                                </>
+                                                            )}
                                                             <p className="text-xs text-gray-500 mt-1">
                                                                 {formatTimeAgo(notification.createdAt)}
                                                             </p>
