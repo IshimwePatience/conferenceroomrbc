@@ -44,18 +44,10 @@ const Login = ({ setIsLoggedIn, setUserRole }) => {
             const userRole = decodedToken.role;
             setUserRole(userRole);
             setIsLoggedIn(true);
-            
-            if (isGoogle) {
-                window.location.href = '/dashboard';
-            } else {
-                navigate('/dashboard');
-            }
+            // Always use client-side navigation to avoid full page reloads/long URLs
+            navigate('/dashboard');
         } catch (error) {
-            if (isGoogle) {
-                window.location.href = '/dashboard';
-            } else {
-                navigate('/dashboard');
-            }
+            navigate('/dashboard');
         }
     };
 

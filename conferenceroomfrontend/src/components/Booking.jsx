@@ -51,6 +51,9 @@ const Booking = () => {
     const [actionSuccess, setActionSuccess] = useState('');
     const [conflictWarning, setConflictWarning] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    // Room-day visibility (from PlanningCalendar settings)
+    const [isRoomVisibleOnSelectedDay, setIsRoomVisibleOnSelectedDay] = useState(true);
+    const [visibilityMessage, setVisibilityMessage] = useState('');
     // Recurrence
     const [isRecurring, setIsRecurring] = useState(false);
     const [recurrencePattern, setRecurrencePattern] = useState('WEEKLY'); // WEEKLY | DAILY | CUSTOM:TUESDAY,THURSDAY
@@ -129,6 +132,40 @@ const Booking = () => {
         }
     }, [startTime, endTime, bookings, roomId, room]);
 
+    // Check if the selected day is one where this room is visible to users
+    useEffect(() => {
+        if (!room || !startTime) {
+            setIsRoomVisibleOnSelectedDay(true);
+            setVisibilityMessage('');
+            return;
+        }
+        try {
+            const selectedDate = new Date(startTime);
+            // Only check by day, ignore time
+            const yyyy = selectedDate.getFullYear();
+            const mm = String(selectedDate.getMonth() + 1).padStart(2, '0');
+            const dd = String(selectedDate.getDate()).padStart(2, '0');
+            const dayLocal = `${yyyy}-${mm}-${dd}T00:00:00`;
+            api.get('/room/availability', { params: { date: dayLocal } })
+                .then(res => {
+                    const visibleRooms = res.data || [];
+                    const found = visibleRooms.some(r => r.id === room.id || r.name === room.name);
+                    setIsRoomVisibleOnSelectedDay(found);
+                    if (!found) {
+                        setVisibilityMessage('This room is not visible for users on the selected day. Please choose another visible weekday.');
+                    } else {
+                        setVisibilityMessage('');
+                    }
+                })
+                .catch(() => {
+                    // If API fails, do not block but show hint
+                    setIsRoomVisibleOnSelectedDay(true);
+                });
+        } catch (_) {
+            setIsRoomVisibleOnSelectedDay(true);
+        }
+    }, [startTime, room]);
+
     // Filtering, sorting, and pagination for all bookings
     let filteredBookings = bookings || [];
     if (debouncedSearchTerm) {
@@ -166,8 +203,13 @@ const Booking = () => {
             setFormError('Cannot book due to time conflicts. Please choose a different time.');
             return;
         }
+        // Enforce room-day visibility policy
+        if (!isRoomVisibleOnSelectedDay) {
+            setFormError('This room is not available to book on the selected day. Please choose another day.');
+            return;
+        }
         
-        setIsSubmitting(true);
+        // Clear previous messages before validation
         setFormError('');
         setSuccess('');
         if (!startTime || !endTime || !purpose) {
@@ -189,13 +231,13 @@ const Booking = () => {
         // Business hours + weekdays + 15-min increments
         const day = start.getDay(); // 0 Sun .. 6 Sat
         if (day === 0 || day === 6 || end.getDay() === 0 || end.getDay() === 6) {
-            setFormError('Bookings are allowed only on weekdays (Mon-Fri).');
+            setFormError('Bookings are allowed only on weekdays (Mon-Fri). Please choose another day.');
             return;
         }
         const startMinutes = start.getHours() * 60 + start.getMinutes();
         const endMinutes = end.getHours() * 60 + end.getMinutes();
         if (startMinutes < 7 * 60 || endMinutes > 17 * 60) {
-            setFormError('Bookings must be within business hours (07:00-17:00).');
+            setFormError('Bookings must be within business hours (07:00-17:00). Please choose another time.');
             return;
         }
         // Prevent creating bookings for today after 17:00
@@ -207,11 +249,11 @@ const Booking = () => {
 
         const durationMins = (end - start) / 60000;
         if (durationMins < 30) {
-            setFormError('Minimum booking duration is 30 minutes.');
+            setFormError('Minimum booking duration is 30 minutes. Please choose another time.');
             return;
         }
         if (durationMins > 8 * 60) {
-            setFormError('Maximum booking duration is 8 hours.');
+            setFormError('Maximum booking duration is 8 hours. Please shorten the duration.');
             return;
         }
         
@@ -319,6 +361,8 @@ const Booking = () => {
             }
         }
         
+        // All validations passed; now set submitting state and proceed
+        setIsSubmitting(true);
         try {
             if (isRecurring) {
                 await api.post('/booking/create/recurring', {
@@ -639,9 +683,9 @@ const Booking = () => {
                                                         )}
                                                     </td>
                                                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-300">
-                                                        {/* Cancel button - show for user's own pending bookings OR for admins on any booking */}
-                                                        {(booking.status === 'PENDING' || 
-                                                          (userRole === 'ADMIN' || userRole === 'SYSTEM_ADMIN')) && (
+                                                        {/* Cancel: admins can cancel PENDING/APPROVED; others only PENDING */}
+                                                        {(((userRole === 'ADMIN' || userRole === 'SYSTEM_ADMIN') && (booking.status === 'PENDING' || booking.status === 'APPROVED')) ||
+                                                          (!(userRole === 'ADMIN' || userRole === 'SYSTEM_ADMIN') && booking.status === 'PENDING')) && (
                                                             <button
                                                                 onClick={() => {
                                                                     if ((userRole === 'ADMIN' || userRole === 'SYSTEM_ADMIN') && booking.status === 'APPROVED') {
@@ -659,7 +703,7 @@ const Booking = () => {
                                                                         : "Cancel this approved booking (Admin action)"
                                                                 }
                                                             >
-                                                                {booking.status === 'PENDING' ? 'Cancel' : 'Cancel (Admin)'}
+                                                                Cancel
                                                             </button>
                                                         )}
                                                     </td>
@@ -733,11 +777,17 @@ const Booking = () => {
                                                 }`}>
                                                     {booking.status}
                                                 </span>
-                                                {/* Cancel button for user's own pending bookings OR for admins on any booking */}
-                                                {(booking.status === 'PENDING' || 
-                                                  (userRole === 'ADMIN' || userRole === 'SYSTEM_ADMIN')) && (
+                                                {/* Cancel: admins can cancel PENDING/APPROVED; others only PENDING */}
+                                                {(((userRole === 'ADMIN' || userRole === 'SYSTEM_ADMIN') && (booking.status === 'PENDING' || booking.status === 'APPROVED')) ||
+                                                   (!(userRole === 'ADMIN' || userRole === 'SYSTEM_ADMIN') && booking.status === 'PENDING')) && (
                                                     <button
-                                                        onClick={() => handleCancelBooking(booking.id)}
+                                                        onClick={() => {
+                                                            if ((userRole === 'ADMIN' || userRole === 'SYSTEM_ADMIN') && booking.status === 'APPROVED') {
+                                                                handleAdminCancelBooking(booking.id);
+                                                            } else {
+                                                                handleCancelBooking(booking.id);
+                                                            }
+                                                        }}
                                                         className={`px-1 py-0.5 text-white rounded hover:opacity-80 text-xs transition-colors ${
                                                             booking.status === 'PENDING' ? 'bg-red-600 hover:bg-red-700' : 'bg-orange-600 hover:bg-orange-700'
                                                         }`}
