@@ -1048,7 +1048,14 @@ const Booking = () => {
                         {/* Recurrence Controls */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4">
                             <div className="flex items-center space-x-2">
-                                <input type="checkbox" id="isRecurring" checked={isRecurring} onChange={(e)=>setIsRecurring(e.target.checked)} disabled={!isRoomVisibleOnSelectedDay || !isRoomVisibleAllWeek} />
+                                <input
+                                    type="checkbox"
+                                    id="isRecurring"
+                                    checked={isRecurring}
+                                    onChange={(e)=>setIsRecurring(e.target.checked)}
+                                    disabled={!isRoomVisibleOnSelectedDay || !isRoomVisibleAllWeek}
+                                    title={!isRoomVisibleOnSelectedDay || !isRoomVisibleAllWeek ? 'Recurring is only available when this room is visible Monday–Friday for the selected week.' : ''}
+                                />
                                 <label htmlFor="isRecurring" className="text-sm text-gray-300">Recurring</label>
                             </div>
                             <div>
@@ -1104,6 +1111,11 @@ const Booking = () => {
                                 />
                             </div>
                         </div>
+                        {(!isRoomVisibleOnSelectedDay || !isRoomVisibleAllWeek) && (
+                            <div className="text-xs text-yellow-300 bg-yellow-500/10 border border-yellow-500/30 rounded px-2 py-1">
+                                Recurring bookings are disabled because this room isn’t available for all weekdays of the selected week.
+                            </div>
+                        )}
                         <div>
                             <label htmlFor="purpose" className="block text-sm font-medium text-gray-300 mb-1">Purpose</label>
                             <textarea
