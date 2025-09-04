@@ -67,8 +67,11 @@ public class NotificationService {
         System.out.println("Found " + allActiveUsers.size() + " active users to notify");
 
         String title = "New Room Available";
-        String message = String.format("Room '%s' is now available for booking. Added by %s (%s) from %s",
+        java.time.LocalDate todayKigali = java.time.LocalDate.now(java.time.ZoneId.of("Africa/Kigali"));
+        String message = String.format(
+                "Room '%s' is now available for booking on %s. Added by %s (%s) from %s",
                 room.getName(),
+                todayKigali.toString(),
                 adminUser.getFirstName() + " " + adminUser.getLastName(),
                 adminUser.getRole(),
                 room.getOrganization() != null ? room.getOrganization().getName() : "Unknown Organization");
@@ -318,6 +321,13 @@ public class NotificationService {
                 String after = msg.substring(idx + "available for booking on".length()).trim();
                 String dateStr = after.split("[ .]")[0];
                 dto.setVisibleDate(java.time.LocalDate.parse(dateStr));
+            }
+            // Generic fallback: find the first YYYY-MM-DD in the message
+            if (dto.getVisibleDate() == null && msg != null) {
+                java.util.regex.Matcher m = java.util.regex.Pattern.compile("(\\d{4}-\\d{2}-\\d{2})").matcher(msg);
+                if (m.find()) {
+                    dto.setVisibleDate(java.time.LocalDate.parse(m.group(1)));
+                }
             }
         } catch (Exception ignored) {}
 
